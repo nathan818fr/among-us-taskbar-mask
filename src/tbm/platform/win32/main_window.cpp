@@ -23,7 +23,7 @@ MainWindow::MainWindow(const std::string &title, bool taskbar) : p_(std::make_un
   p_->winClass_ = L"TbmMainWindowClass";
   WNDCLASS wc;
   wc.style = 0;
-  wc.lpfnWndProc = &MainWindowPrivate::globalWindowProc;
+  wc.lpfnWndProc = reinterpret_cast<WNDPROC>(&MainWindowPrivate::globalWindowProc);
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
   wc.hInstance = GetModuleHandle(nullptr);

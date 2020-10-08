@@ -1,0 +1,79 @@
+trigger:
+  branches:
+    include:
+      - master
+      - refs/tags/v*
+
+jobs:
+  - job: build_windows
+    displayName: Build Windows
+    pool:
+      vmImage: 'vs2017-win2016'
+    strategy:
+      matrix:
+        x64 Release:
+          TBM_BuildType: Release
+          TBM_CMakeArgs: '-G"Visual Studio 15 2017 Win64"'
+          TBM_ExecutablePath: 'build\Release\Among_Us_Taskbar_Mask.exe'
+          TBM_ArtifactClassifier: 'win-x64'
+        x86 Release:
+          TBM_BuildType: Release
+          TBM_CMakeArgs: '-G"Visual Studio 15 2017"'
+          TBM_ExecutablePath: 'build\Release\Among_Us_Taskbar_Mask.exe'
+          TBM_ArtifactClassifier: 'win-x86'
+    steps:
+      - task: CMake@1
+        inputs:
+          cmakeArgs: '.. $(TBM_CMakeArgs) -DCMAKE_BUILD_TYPE=$(TBM_BuildType)'
+      - task: MSBuild@1
+        inputs:
+          solution: 'build/TBM.sln'
+          msbuildArguments: '/m /p:Configuration=$(TBM_BuildType)'
+      - task: CmdLine@2
+        inputs:
+          script: 'copy /B "$(TBM_ExecutablePath)" "$(Build.ArtifactStagingDirectory)\among-us-taskbar-mask-$(TBM_ArtifactClassifier).exe"'
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: '$(Build.ArtifactStagingDirectory)'
+          artifact: 'Standalone Executable @ $(TBM_ArtifactClassifier)'
+          publishLocation: 'pipeline'
+  - job: release
+    displayName: Release
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+    dependsOn:
+      - build_windows
+    pool:
+      vmImage: 'ubuntu-18.04'
+    variables:
+      TBM_ReleaseDirectory: '$(Pipeline.Workspace)/releases'
+    steps:
+      - task: Bash@3
+        inputs:
+          targetType: 'inline'
+          script: "mkdir '$(TBM_ReleaseDirectory)'"
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          buildType: 'current'
+          artifactName: 'Standalone Executable @ win-x64'
+          targetPath: '$(TBM_ReleaseDirectory)'
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          buildType: 'current'
+          artifactName: 'Standalone Executable @ win-x86'
+          targetPath: '$(TBM_ReleaseDirectory)'
+      - task: Bash@3
+        inputs:
+          targetType: 'inline'
+          script: "cd '$(TBM_ReleaseDirectory)' && ls"
+      - task: GitHubRelease@1
+        inputs:
+          gitHubConnection: github.com_nathan818fr
+          repositoryName: '$(Build.Repository.Name)'
+          action: 'create'
+          target: '$(Build.SourceVersion)'
+          tagSource: 'gitTag'
+          isDraft: true
+          changeLogCompareToRelease: 'lastFullRelease'
+          changeLogType: 'commitBased'
+          assets: |
+            $(TBM_ReleaseDirectory)/*

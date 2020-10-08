@@ -47,11 +47,6 @@ endif ()
 ## Plog
 include_directories(lib/plog_v1.1.5/include/)
 
-## WinSDK
-if (TBM_WIN32)
-    find_library(WINDOWSSDK REQUIRED)
-endif ()
-
 ## Nowide
 if (TBM_WIN32)
     include_directories(lib/nowide_standalone_v11.0.0/include/)
