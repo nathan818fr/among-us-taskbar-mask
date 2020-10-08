@@ -1,0 +1,2 @@
+lib/* linguist-vendored
+scripts/lint/.cpplint.py linguist-vendored
