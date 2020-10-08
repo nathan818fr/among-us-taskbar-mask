@@ -1,0 +1,8 @@
+# CMake build directoris
+build
+build-*
+cmake-build-*
+
+# CLion
+.idea/
+*.iml
