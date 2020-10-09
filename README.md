@@ -1,4 +1,4 @@
-# Among Us Taskbar Mask
+# Among Us Taskbar Mask · [![Build Status](https://dev.azure.com/nathan-poirier/among-us-taskbar-mask/_apis/build/status/nathan818fr.among-us-taskbar-mask?branchName=master)](https://dev.azure.com/nathan-poirier/among-us-taskbar-mask/_build/latest?definitionId=1&branchName=master)
 
 A small utility to hide the Among Us taskbar when playing ([for more fun!](#motivation)).
 
